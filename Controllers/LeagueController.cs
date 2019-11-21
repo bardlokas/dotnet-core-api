@@ -13,10 +13,13 @@ namespace TodoApi.Controllers
     public class LeagueController : Controller
     {
         private readonly LeagueContext _context;
+        private readonly SportContext _sportContext;
 
-        public LeagueController(LeagueContext context)
+
+        public LeagueController(LeagueContext context, SportContext sportContext)
         {
             _context = context;
+            _sportContext = sportContext;
         }
 
         [HttpGet]
@@ -39,12 +42,19 @@ namespace TodoApi.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] League item)
         {
-            if (item == null)
+            if (item == null || !item.SportId.HasValue)
             {
                 return BadRequest();
             }
 
-            _context.Leagues.Add(item);
+            var league = new League
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Category = _sportContext.Sports.Where(x => x.Id == item.SportId.Value).FirstOrDefault(),
+            };
+
+            _context.Leagues.Add(league);
             _context.SaveChanges();
 
             return CreatedAtRoute("GetLeague", new { id = item.Id }, item);
