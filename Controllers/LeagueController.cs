@@ -14,12 +14,16 @@ namespace TodoApi.Controllers
     {
         private readonly LeagueContext _context;
         private readonly SportContext _sportContext;
+        private readonly TeamContext _teamContext;
+        private readonly MatchContext _matchContext;
 
 
-        public LeagueController(LeagueContext context, SportContext sportContext)
+        public LeagueController(LeagueContext context, SportContext sportContext, TeamContext teamContext, MatchContext matchContext)
         {
             _context = context;
             _sportContext = sportContext;
+            _teamContext = teamContext;
+            _matchContext = matchContext;
         }
 
         [HttpGet]
@@ -51,7 +55,8 @@ namespace TodoApi.Controllers
             {
                 Id = item.Id,
                 Name = item.Name,
-                Category = _sportContext.Sports.Where(x => x.Id == item.SportId.Value).FirstOrDefault(),
+                Category = _sportContext.Sports.FirstOrDefault(x => x.Id == item.SportId.Value),
+                
             };
 
             _context.Leagues.Add(league);
@@ -60,26 +65,70 @@ namespace TodoApi.Controllers
             return CreatedAtRoute("GetLeague", new { id = item.Id }, item);
         }
 
-        //[HttpPut("{id}")]
-        //public IActionResult Update(long id, [FromBody] League item)
-        //{
-        //    if (item == null || item.Id != id)
-        //    {
-        //        return BadRequest();
-        //    }
+        [HttpPut("{id}")]
+        public IActionResult Update(long id, [FromBody] League item)
+        {
+            if (item == null || item.Id != id)
+            {
+                return BadRequest();
+            }
 
-        //    var league = _context.Leagues.FirstOrDefault(t => t.Id == id);
-        //    if (league == null)
-        //    {
-        //        return NotFound();
-        //    }
+            var league = _context.Leagues.FirstOrDefault(t => t.Id == id);
+            if (league == null)
+            {
+                return NotFound();
+            }
 
-        //    league.Name = item.Name;
+            if(!string.IsNullOrWhiteSpace(item.Name))
+                league.Name = item.Name;
 
-        //    _context.Leagues.Update(league);
-        //    _context.SaveChanges();
-        //    return new NoContentResult();
-        //}
+            if (item.Status != null)
+                league.Status = item.Status;
+    
+            foreach(var match in item.Matches)
+            {
+                if(match.Id > 0)
+                {
+                    var matchToUpdate = _matchContext.Matches.FirstOrDefault(x => x.Id == match.Id);
+                    matchToUpdate.Date = match.Date;
+
+                    foreach(var participatingTeamUpdate in match.Teams)
+                    {
+                        var participatingTeam = matchToUpdate.Teams.FirstOrDefault(x => x.Id == participatingTeamUpdate.Id);
+                        participatingTeam.Handicap = participatingTeamUpdate.Handicap;
+                        participatingTeam.Score = participatingTeamUpdate.Score;
+                        participatingTeam.Team = _teamContext.Teams.FirstOrDefault(x => x.Id == participatingTeamUpdate.TeamId);
+                    }
+                } else
+                {
+                    //Add new match to League
+                    var newMatch = new Match
+                    {
+                        Date = match.Date,
+                    };
+
+                    foreach(var participatingTeam in match.Teams)
+                    {
+                        var team = _teamContext.Teams.FirstOrDefault(x => x.Id == participatingTeam.TeamId.Value);
+                        var newParticipatingTeam = new ParticipatingTeam
+                        {
+                            Team = team,
+                            Handicap = participatingTeam.Handicap,
+                            Score = participatingTeam.Score,
+                        };
+
+                        newMatch.Teams.Add(newParticipatingTeam);
+                    }
+
+                    league.Matches.Add(newMatch);
+                }
+
+            }
+
+            _context.Leagues.Update(league);
+            _context.SaveChanges();
+            return new NoContentResult();
+        }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(long id)

@@ -47,14 +47,11 @@ namespace TodoApi.Controllers
                 return BadRequest();
             }
 
-            var test = _sportContext.Sports.Where(x => x.Id == item.SportId).FirstOrDefault();
-
-
             var team = new Team
             {
                 Id = item.Id,
                 Name = item.Name,
-                Sport = _sportContext.Sports.Where(x => x.Id == item.SportId).FirstOrDefault()
+                Sport = _sportContext.Sports.FirstOrDefault(x => x.Id == item.SportId)
             };
 
             _context.Teams.Add(team);
@@ -63,26 +60,26 @@ namespace TodoApi.Controllers
             return CreatedAtRoute("GetTeam", new { id = item.Id }, item);
         }
 
-        //[HttpPut("{id}")]
-        //public IActionResult Update(long id, [FromBody] League item)
-        //{
-        //    if (item == null || item.Id != id)
-        //    {
-        //        return BadRequest();
-        //    }
+        [HttpPut("{id}")]
+        public IActionResult Update(long id, [FromBody] Team item)
+        {
+            if (item == null || item.Id != id)
+            {
+                return BadRequest();
+            }
 
-        //    var league = _context.Leagues.FirstOrDefault(t => t.Id == id);
-        //    if (league == null)
-        //    {
-        //        return NotFound();
-        //    }
+            var team = _context.Teams.FirstOrDefault(t => t.Id == id);
+            if (team == null)
+            {
+                return NotFound();
+            }
 
-        //    league.Name = item.Name;
+            team.Name = item.Name;
 
-        //    _context.Leagues.Update(league);
-        //    _context.SaveChanges();
-        //    return new NoContentResult();
-        //}
+            _context.Teams.Update(team);
+            _context.SaveChanges();
+            return new NoContentResult();
+        }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(long id)
