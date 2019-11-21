@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,9 @@ namespace TodoApi.Models
 
 	public class ParticipatingTeam
 	{
+        public int Id { get; set; }
         public int? TeamId { get; set; }
+        [JsonIgnore]
 		public Team Team { get; set; }
 		public double Score { get; set; }
 		public int Handicap { get; set; }
