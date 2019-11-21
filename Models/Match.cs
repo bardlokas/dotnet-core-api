@@ -15,6 +15,7 @@ namespace TodoApi.Models
 
 	public class ParticipatingTeam
 	{
+        public int? TeamId { get; set; }
 		public Team Team { get; set; }
 		public double Score { get; set; }
 		public int Handicap { get; set; }
