@@ -10,25 +10,25 @@ using TodoApi.Models;
 namespace TodoApi.Controllers
 {
     [Route("api/[controller]")]
-    public class LeagueController : Controller
+    public class MatchController : Controller
     {
-        private readonly LeagueContext _context;
+        private readonly MatchContext _context;
 
-        public LeagueController(LeagueContext context)
+        public MatchController(MatchContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public IEnumerable<League> GetAll()
+        public IEnumerable<Match> GetAll()
         {
-            return _context.Leagues.ToList();
+            return _context.Matches.ToList();
         }
 
-        [HttpGet("{id}", Name = "GetLeague")]
+        [HttpGet("{id}", Name = "GetMatch")]
         public IActionResult GetById(long id)
         {
-            var item = _context.Leagues.FirstOrDefault(t => t.Id == id);
+            var item = _context.Matches.FirstOrDefault(t => t.Id == id);
             if (item == null)
             {
                 return NotFound();
@@ -37,17 +37,17 @@ namespace TodoApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] League item)
+        public IActionResult Create([FromBody] Match item)
         {
             if (item == null)
             {
                 return BadRequest();
             }
 
-            _context.Leagues.Add(item);
+            _context.Matches.Add(item);
             _context.SaveChanges();
 
-            return CreatedAtRoute("GetLeague", new { id = item.Id }, item);
+            return CreatedAtRoute("GetMatch", new { id = item.Id }, item);
         }
 
         //[HttpPut("{id}")]
@@ -74,13 +74,13 @@ namespace TodoApi.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(long id)
         {
-            var todo = _context.Leagues.FirstOrDefault(t => t.Id == id);
+            var todo = _context.Matches.FirstOrDefault(t => t.Id == id);
             if (todo == null)
             {
                 return NotFound();
             }
 
-            _context.Leagues.Remove(todo);
+            _context.Matches.Remove(todo);
             _context.SaveChanges();
             return new NoContentResult();
         }
