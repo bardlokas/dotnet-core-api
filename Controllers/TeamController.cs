@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,16 +14,18 @@ namespace TodoApi.Controllers
     public class TeamController : Controller
     {
         private readonly TeamContext _context;
+        private readonly SportContext _sportContext;
 
-        public TeamController(TeamContext context)
+        public TeamController(TeamContext context, SportContext sportContext)
         {
             _context = context;
+            _sportContext = sportContext;
         }
 
         [HttpGet]
         public IEnumerable<Team> GetAll()
         {
-            return _context.Teams.ToList();
+            return _context.Teams.Include(x => x.Sport).ToList();
         }
 
         [HttpGet("{id}", Name = "GetTeam")]
@@ -44,7 +47,17 @@ namespace TodoApi.Controllers
                 return BadRequest();
             }
 
-            _context.Teams.Add(item);
+            var test = _sportContext.Sports.Where(x => x.Id == item.SportId).FirstOrDefault();
+
+
+            var team = new Team
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Sport = _sportContext.Sports.Where(x => x.Id == item.SportId).FirstOrDefault()
+            };
+
+            _context.Teams.Add(team);
             _context.SaveChanges();
 
             return CreatedAtRoute("GetTeam", new { id = item.Id }, item);
