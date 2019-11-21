@@ -11,7 +11,12 @@ namespace TodoApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<TodoContext>(opt => opt.UseInMemoryDatabase("TodoList"));
-            services.AddMvc();
+			services.AddDbContext<LeagueContext>(opt => opt.UseInMemoryDatabase("Leagues"));
+			services.AddDbContext<TeamContext>(opt => opt.UseInMemoryDatabase("Teams"));
+			services.AddDbContext<ParticipatingTeamContext>(opt => opt.UseInMemoryDatabase("ParticipatingTeams"));
+			services.AddDbContext<MatchContext>(opt => opt.UseInMemoryDatabase("Matches"));
+			services.AddDbContext<SportContext>(opt => opt.UseInMemoryDatabase("Sports"));
+			services.AddMvc();
 
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
